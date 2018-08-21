@@ -518,6 +518,12 @@ sub _copy {
         printf "copy(%s,%s)\n", $from, $to;
     }
     if (!$dry_run) {
+        # Remove files before overwriting them, per install(1)'s behaviour. This
+        # prevents processes with handles on $to suffering a SIGBUS, if $to is a
+        # binary.
+        if (-e $to && ! -d $to) {
+            unlink($to);
+        }
         File::Copy::copy($from,$to)
             or Carp::croak( _estr "ERROR: Cannot copy '$from' to '$to': $!" );
     }
